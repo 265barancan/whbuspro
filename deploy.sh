@@ -41,6 +41,10 @@ docker compose up -d --build
 # Konteynerlerin ayağa kalkmasını 5 saniye bekle
 sleep 5
 
+# 3.5. PHP bağımlılıklarını kur
+echo -e "${YELLOW}[3.5/5] PHP bağımlılıkları (Composer) kuruluyor...${NC}"
+docker compose exec -u www-data app composer install --no-dev --optimize-autoloader
+
 # 4. Uygulama Anahtarını Üret ve Dosya İzinlerini Ayarla
 echo -e "${YELLOW}[4/5] Laravel uygulama anahtarı oluşturuluyor...${NC}"
 docker compose exec -u www-data app php artisan key:generate
