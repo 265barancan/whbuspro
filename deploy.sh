@@ -35,15 +35,29 @@ fi
 
 # 3. Docker Konteynerlerini Derle ve Arka Planda Başlat
 echo -e "${YELLOW}[3/5] Docker imajları derleniyor ve servisler başlatılıyor...${NC}"
-docker compose down
-docker compose up -d --build
+docker compose down --volumes --remove-orphans
+docker compose up -d --build --force-recreate
 
 # Konteynerlerin ayağa kalkmasını 5 saniye bekle
 sleep 5
 
+# 3.2. İnternet Bağlantısı ve DNS Kontrolü (Teşhis)
+echo -e "${YELLOW}[3.2/5] Konteyner içi internet bağlantısı test ediliyor...${NC}"
+if ! docker compose exec -t app curl -I -s --connect-timeout 5 https://github.com > /dev/null; then
+    echo -e "${RED}❌ HATA: Konteyner içinden internete (GitHub) erişilemiyor!${NC}"
+    echo -e "${RED}Bu durum VDS sunucunuzdaki güvenlik duvarı (UFW/Firewall) veya Docker DNS çözümleme sorunlarından kaynaklanır.${NC}"
+    echo -e "${RED}Geçici olarak VDS sunucunuzda 'sudo systemctl restart docker' komutuyla Docker servisini yeniden başlatmayı deneyebilirsiniz.${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ Konteyner içi internet bağlantısı başarılı.${NC}"
+
 # 3.5. PHP bağımlılıklarını kur
 echo -e "${YELLOW}[3.5/5] PHP bağımlılıkları (Composer) kuruluyor...${NC}"
-docker compose exec -u www-data app composer install --no-dev --optimize-autoloader
+if ! docker compose exec -u www-data app composer install --no-dev --optimize-autoloader; then
+    echo -e "${RED}❌ HATA: PHP kütüphaneleri (Composer) yüklenirken hata oluştu!${NC}"
+    exit 1
+fi
+echo -e "${GREEN}✓ PHP kütüphaneleri başarıyla kuruldu.${NC}"
 
 # 4. Uygulama Anahtarını Üret ve Dosya İzinlerini Ayarla
 echo -e "${YELLOW}[4/5] Laravel uygulama anahtarı oluşturuluyor...${NC}"
