@@ -16,6 +16,40 @@ cPanel panelinizde **MultiPHP Yöneticisi** (MultiPHP Manager) veya **Select PHP
 
 ---
 
+## 1.5. cPanel Git™ Version Control ve GitHub ile Kurulum
+
+Eğer projenizi zip olarak yüklemek yerine doğrudan GitHub üzerinden cPanel'e çekmek ve güncellemeleri tek tıkla almak istiyorsanız bu adımları takip edin:
+
+### Adım 1: GitHub Deposunu cPanel'e Bağlama
+1.  cPanel paneline giriş yapın ve **Git™ Version Control** (Git Versiyon Kontrolü) uygulamasına girin.
+2.  Sağ üstteki **Create** (Oluştur) butonuna tıklayın.
+3.  Aşağıdaki alanları doldurun:
+    *   **Clone URL:** `https://github.com/265barancan/whbuspro.git`
+    *   **File Path (Dizin):** `/home/clerkglobal/whbuspro.clerkglobal.net` *(Subdomain klasörünüz)*
+    *   **Repository Name:** `whbuspro`
+4.  **Create** butonuna tıklayın. cPanel, GitHub'daki kodlarınızı otomatik olarak sunucudaki subdomain dizinine klonlayacaktır.
+
+### Adım 2: Bağımlılıkları ve Çevre Ayarlarını Yapma
+Klonlama bittikten sonra cPanel Terminal'e bağlanıp sırasıyla şu komutları çalıştırın:
+```bash
+# 1. Proje dizinine geçin
+cd /home/clerkglobal/whbuspro.clerkglobal.net
+
+# 2. .env dosyasını oluşturun
+cp .env.example .env
+
+# 3. Kütüphaneleri indirin
+composer install --no-dev --optimize-autoloader
+
+# 4. Uygulama anahtarını oluşturun
+php artisan key:generate
+```
+
+### Adım 3: Güncellemeleri Tek Tıkla Çekme (Update/Pull)
+Geliştirme yapıp GitHub'a yeni kod gönderdiğinizde, cPanel'de **Git™ Version Control** alanına girip projenizin yanındaki **Manage** butonuna tıklayarak **Pull or Deploy** sekmesinden **Update** butonuna basarak sunucudaki kodlarınızı tek tıkla güncelleyebilirsiniz.
+
+---
+
 ## 2. Güvenli Dosya Dizin Yapısı (cPanel Klasör Bölme)
 
 cPanel'de projenizi doğrudan `public_html` klasörüne yüklemek `.env` dosyanızın ve PHP kaynak kodlarınızın dışarıdan okunmasına sebep olabilir (Güvenlik Açığı). Bu nedenle **klasör bölme** yöntemi uygulanmalıdır:
