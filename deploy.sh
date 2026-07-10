@@ -8,6 +8,20 @@ NC='\033[0;3m' # No Color
 
 echo -e "${YELLOW}=== WHBusPro Tek Tıkla VDS Kurulumu Başlatılıyor ===${NC}"
 
+# Docker Compose komut tespiti (Boşluklu veya çizgili)
+DOCKER_COMPOSE=""
+if docker compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker compose"
+elif docker-compose version >/dev/null 2>&1; then
+    DOCKER_COMPOSE="docker-compose"
+else
+    echo -e "${RED}❌ HATA: Sunucuda Docker Compose bulunamadı!${NC}"
+    echo -e "${RED}Lütfen 'docker-compose' veya 'docker compose' eklentisini kurun.${NC}"
+    exit 1
+fi
+
+echo -e "${GREEN}✓ Tespit edilen Docker Compose komutu: $DOCKER_COMPOSE${NC}"
+
 # 1. Bozuk Docker önbelleklerini temizle (Hata almayı önlemek için)
 echo -e "${YELLOW}[1/5] Bozuk Docker önbellekleri temizleniyor...${NC}"
 docker builder prune -f
@@ -35,15 +49,15 @@ fi
 
 # 3. Docker Konteynerlerini Derle ve Arka Planda Başlat
 echo -e "${YELLOW}[3/5] Docker imajları derleniyor ve servisler başlatılıyor...${NC}"
-docker compose down --volumes --remove-orphans
-docker compose up -d --build --force-recreate
+$DOCKER_COMPOSE down --volumes --remove-orphans
+$DOCKER_COMPOSE up -d --build --force-recreate
 
 # Konteynerlerin ayağa kalkmasını 5 saniye bekle
 sleep 5
 
 # 3.2. İnternet Bağlantısı ve DNS Kontrolü (Teşhis)
 echo -e "${YELLOW}[3.2/5] Konteyner içi internet bağlantısı test ediliyor...${NC}"
-if ! docker compose exec -t app curl -I -s --connect-timeout 5 https://github.com > /dev/null; then
+if ! $DOCKER_COMPOSE exec -T app curl -I -s --connect-timeout 5 https://github.com > /dev/null; then
     echo -e "${RED}❌ HATA: Konteyner içinden internete (GitHub) erişilemiyor!${NC}"
     echo -e "${RED}Bu durum VDS sunucunuzdaki güvenlik duvarı (UFW/Firewall) veya Docker DNS çözümleme sorunlarından kaynaklanır.${NC}"
     echo -e "${RED}Geçici olarak VDS sunucunuzda 'sudo systemctl restart docker' komutuyla Docker servisini yeniden başlatmayı deneyebilirsiniz.${NC}"
@@ -53,7 +67,7 @@ echo -e "${GREEN}✓ Konteyner içi internet bağlantısı başarılı.${NC}"
 
 # 3.5. PHP bağımlılıklarını kur
 echo -e "${YELLOW}[3.5/5] PHP bağımlılıkları (Composer) kuruluyor...${NC}"
-if ! docker compose exec -u www-data app composer install --no-dev --optimize-autoloader; then
+if ! $DOCKER_COMPOSE exec -T -u www-data app composer install --no-dev --optimize-autoloader; then
     echo -e "${RED}❌ HATA: PHP kütüphaneleri (Composer) yüklenirken hata oluştu!${NC}"
     exit 1
 fi
@@ -61,12 +75,12 @@ echo -e "${GREEN}✓ PHP kütüphaneleri başarıyla kuruldu.${NC}"
 
 # 4. Uygulama Anahtarını Üret ve Dosya İzinlerini Ayarla
 echo -e "${YELLOW}[4/5] Laravel uygulama anahtarı oluşturuluyor...${NC}"
-docker compose exec -u www-data app php artisan key:generate
-docker compose exec app chown -R www-data:www-data storage bootstrap/cache
+$DOCKER_COMPOSE exec -T -u www-data app php artisan key:generate
+$DOCKER_COMPOSE exec -T app chown -R www-data:www-data storage bootstrap/cache
 
 # 5. Veritabanını Yapılandır ve Seed Et
 echo -e "${YELLOW}[5/5] Veritabanı tabloları ve varsayılan yönetici oluşturuluyor...${NC}"
-docker compose exec -u www-data app php artisan migrate --seed --force
+$DOCKER_COMPOSE exec -T -u www-data app php artisan migrate --seed --force
 
 echo -e "${GREEN}==================================================${NC}"
 echo -e "${GREEN}✓ KURULUM BAŞARIYLA TAMAMLANDI!${NC}"
