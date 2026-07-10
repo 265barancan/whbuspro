@@ -13,8 +13,6 @@ services:
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
-    volumes:
-      - ./:/var/www
     networks:
       - whbuspro-network
 
@@ -28,8 +26,6 @@ services:
     restart: unless-stopped
     ports:
       - "8080:80"
-    volumes:
-      - ./:/var/www
     networks:
       - whbuspro-network
     depends_on:
@@ -74,8 +70,6 @@ services:
     container_name: whbuspro-worker
     restart: unless-stopped
     command: /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
-    volumes:
-      - ./:/var/www
     depends_on:
       - app
       - db

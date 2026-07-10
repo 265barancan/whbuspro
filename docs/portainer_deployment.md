@@ -38,13 +38,10 @@ Konteynerler ayağa kalktıktan sonra veritabanı şemasını oluşturmak ve adm
 3.  **User** alanını `www-data` olarak değiştirin ve **Connect** deyin.
 4.  Terminal ekranında sırasıyla şu komutları çalıştırın:
     ```bash
-    # 1. Laravel kütüphanelerini kurun
-    composer install --no-dev --optimize-autoloader
-
-    # 2. .env dosyasını oluşturun (Portainer env verilerini buraya yazın veya doğrudan oluşturun)
+    # 1. .env dosyasını oluşturun (Portainer env verilerini buraya yazın veya doğrudan oluşturun)
     php artisan key:generate
 
-    # 3. Veritabanını migrate edin ve admin kullanıcısını oluşturun
+    # 2. Veritabanını migrate edin ve admin kullanıcısını oluşturun
     php artisan migrate:fresh --seed
     ```
 

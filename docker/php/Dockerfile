@@ -30,6 +30,12 @@ WORKDIR /var/www
 # Copy custom php configurations
 COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 
+# Copy existing application directory contents
+COPY --chown=www-data:www-data . /var/www
+
+# Install composer dependencies
+RUN composer install --no-dev --optimize-autoloader
+
 # Copy supervisord configuration
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
