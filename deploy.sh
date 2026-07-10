@@ -67,7 +67,7 @@ echo -e "${GREEN}✓ Konteyner içi internet bağlantısı başarılı.${NC}"
 
 # 3.5. PHP bağımlılıklarını kur
 echo -e "${YELLOW}[3.5/5] PHP bağımlılıkları (Composer) kuruluyor...${NC}"
-if ! $DOCKER_COMPOSE exec -T -u www-data app composer install --no-dev --optimize-autoloader; then
+if ! $DOCKER_COMPOSE exec -T -u www-data app env COMPOSER_HOME=/tmp/composer COMPOSER_AUDIT_BLOCK=false composer install --no-dev --optimize-autoloader --no-audit; then
     echo -e "${RED}❌ HATA: PHP kütüphaneleri (Composer) yüklenirken hata oluştu!${NC}"
     exit 1
 fi
