@@ -72,13 +72,16 @@ docker compose up -d --build
 Konteynerler ayağa kalktıktan sonra, uygulama içindeki bağımlılıkları yüklemek ve veritabanını hazırlamak için ana sunucu terminalinden şu tek satırlık komutları sırasıyla çalıştırın:
 
 ```bash
-# 1. Şifreleme anahtarını (APP_KEY) üretin
+# 1. PHP Composer bağımlılıklarını kurun
+docker compose exec -u www-data app composer install --no-dev --optimize-autoloader
+
+# 2. Şifreleme anahtarını (APP_KEY) üretin
 docker compose exec -u www-data app php artisan key:generate
 
-# 2. Veritabanı tablolarını oluşturun ve varsayılan yöneticiyi seed edin
+# 3. Veritabanı tablolarını oluşturun ve varsayılan yöneticiyi seed edin
 docker compose exec -u www-data app php artisan migrate --seed
 
-# 3. Dosya izinlerini optimize edin (Gerekiyorsa)
+# 4. Dosya izinlerini optimize edin (Gerekiyorsa)
 docker compose exec app chown -R www-data:www-data storage bootstrap/cache
 ```
 
