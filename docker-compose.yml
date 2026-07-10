@@ -10,6 +10,9 @@ services:
     container_name: whbuspro-app
     restart: unless-stopped
     tty: true
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     environment:
       SERVICE_NAME: app
       SERVICE_TAGS: dev
@@ -70,6 +73,9 @@ services:
     container_name: whbuspro-worker
     restart: unless-stopped
     command: /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+    dns:
+      - 8.8.8.8
+      - 1.1.1.1
     depends_on:
       - app
       - db
