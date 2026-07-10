@@ -1,0 +1,94 @@
+version: '3.8'
+
+services:
+  # PHP Application Server
+  app:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: whbuspro-app
+    container_name: whbuspro-app
+    restart: unless-stopped
+    tty: true
+    environment:
+      SERVICE_NAME: app
+      SERVICE_TAGS: dev
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    networks:
+      - whbuspro-network
+
+  # Nginx Web Server
+  web:
+    image: nginx:alpine
+    container_name: whbuspro-web
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    volumes:
+      - ./:/var/www
+      - ./docker/nginx/default.conf:/etc/nginx/conf.d/default.conf
+    networks:
+      - whbuspro-network
+    depends_on:
+      - app
+
+  # MySQL Database Server
+  db:
+    image: mysql:8.0
+    container_name: whbuspro-db
+    restart: unless-stopped
+    tty: true
+    ports:
+      - "33066:33" # 3306 is mapped to 33066 on host to avoid conflicts
+    environment:
+      MYSQL_DATABASE: whbuspro
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_PASSWORD: secretpassword
+      MYSQL_USER: whbuspro_user
+    volumes:
+      - whbuspro-db-data:/var/lib/mysql
+    networks:
+      - whbuspro-network
+
+  # Redis Cache & Queue Server
+  cache:
+    image: redis:alpine
+    container_name: whbuspro-cache
+    restart: unless-stopped
+    ports:
+      - "63799:6379" # 6379 is mapped to 63799 on host to avoid conflicts
+    volumes:
+      - whbuspro-cache-data:/data
+    networks:
+      - whbuspro-network
+
+  # Queue Worker
+  worker:
+    build:
+      context: .
+      dockerfile: docker/php/Dockerfile
+    image: whbuspro-app
+    container_name: whbuspro-worker
+    restart: unless-stopped
+    command: /usr/bin/supervisord -n -c /etc/supervisor/conf.d/supervisord.conf
+    volumes:
+      - ./:/var/www
+      - ./docker/php/local.ini:/usr/local/etc/php/conf.d/local.ini
+    depends_on:
+      - app
+      - db
+      - cache
+    networks:
+      - whbuspro-network
+
+networks:
+  whbuspro-network:
+    driver: bridge
+
+volumes:
+  whbuspro-db-data:
+    driver: local
+  whbuspro-cache-data:
+    driver: local

@@ -1,0 +1,23 @@
+#!/usr/bin/env php
+<?php
+
+use Illuminate\Console\Application;
+use Illuminate\Foundation\Configuration\Plugins;
+
+define('LARAVEL_START', microtime(true));
+
+// Register the Composer autoloader...
+if (file_exists($a = __DIR__.'/vendor/autoload.php')) {
+    require $a;
+} elseif (file_exists($b = __DIR__.'/../vendor/autoload.php')) {
+    require $b;
+} else {
+    fwrite(STDERR, "Composer autoloader not found. Please run 'composer install'.\n");
+    exit(1);
+}
+
+// Bootstrap Laravel and handle the command...
+$status = ($app = require_once __DIR__.'/bootstrap/app.php')
+    ->handleCommand(new Symfony\Component\Console\Input\ArgvInput);
+
+exit($status);
