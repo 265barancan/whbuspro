@@ -33,6 +33,21 @@ COPY docker/php/local.ini /usr/local/etc/php/conf.d/local.ini
 # Copy existing application directory contents
 COPY --chown=www-data:www-data . /var/www
 
+# Create necessary Laravel directories and set permissions
+RUN mkdir -p /var/www/storage/framework/cache/data \
+    /var/www/storage/framework/sessions \
+    /var/www/storage/framework/views \
+    /var/www/storage/logs \
+    /var/www/bootstrap/cache && \
+    chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache && \
+    chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+# Install composer dependencies
+# Using root because the build runs as root, but we ensure www-data owns the whole dir
+USER root
+RUN composer config --global policy.advisories.block false && \
+    composer install --no-interaction --optimize-autoloader
+
 # Copy supervisord configuration
 COPY docker/supervisor/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

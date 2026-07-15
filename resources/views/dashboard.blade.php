@@ -650,7 +650,9 @@
             });
 
             if (response.status === 401) {
-                logout();
+                if (endpoint !== '/auth/logout' && endpoint !== '/auth/login') {
+                    logout();
+                }
                 throw new Error('Unauthorized');
             }
 
@@ -1079,8 +1081,8 @@
                 for (let i = 1; i <= varsCount; i++) {
                     inputsDiv.innerHTML += `
                         <div>
-                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Değişken {{${i}}}</label>
-                            <input type="text" name="variables[]" required placeholder="{{${i}}} içeriğini yazın" 
+                            <label class="block text-[10px] font-semibold text-gray-400 uppercase tracking-wider mb-1">Değişken @{{${i}}}</label>
+                            <input type="text" name="variables[]" required placeholder="@{{${i}}} içeriğini yazın" 
                                 class="w-full bg-[#111827]/80 border border-gray-800 rounded-xl px-3 py-2.5 text-xs text-white focus:outline-none focus:border-emerald-500/50 transition">
                         </div>
                     `;
