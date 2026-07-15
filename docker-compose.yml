@@ -66,9 +66,6 @@ services:
 
   # Queue Worker
   worker:
-    build:
-      context: .
-      dockerfile: docker/php/Dockerfile
     image: whbuspro-app
     container_name: whbuspro-worker
     restart: unless-stopped
